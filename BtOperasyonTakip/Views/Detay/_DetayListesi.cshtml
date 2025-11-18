@@ -1,0 +1,81 @@
+﻿@model IEnumerable<BtOperasyonTakip.Models.Detay>
+
+<div class="detay-container" data-musteri-id="@ViewBag.MusteriID">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">📋 Görüşme Detayları</h5>
+        </div>
+        <div class="card-body">
+            <!-- Yeni Detay Ekleme Formu -->
+            <form id="yeniDetayForm" method="post">
+                <input type="hidden" name="MusteriID" value="@ViewBag.MusteriID" />
+
+                <div class="row g-3 mb-4 p-3 bg-light rounded">
+                    <div class="col-md-2">
+                        <label class="form-label">Tarih</label>
+                        <input type="date" name="Tarih" class="form-control" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Görüşülen</label>
+                        <input type="text" name="Gorusulen" class="form-control" placeholder="İsim" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Kekleyen</label>
+                        <input type="text" name="Kekleyen" class="form-control" placeholder="İsim" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Açıklama</label>
+                        <textarea name="Aciklama" class="form-control" rows="1" placeholder="Görüşme notları..." required></textarea>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-success w-100">➕ Ekle</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Detay Listesi -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Görüşülen</th>
+                            <th>Açıklama</th>
+                            <th>Kekleyen</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var detay in Model)
+                        {
+                            <tr>
+                                <td>@detay.Tarih.ToString("dd.MM.yyyy")</td>
+                                <td>@detay.Gorusulen</td>
+                                <td>@detay.Aciklama</td>
+                                <td>@detay.Kekleyen</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning edit-detay-btn" data-id="@detay.DetayID">
+                                        ✏️
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-detay-btn" data-id="@detay.DetayID">
+                                        ❌
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    Henüz görüşme kaydı bulunmamaktadır.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
