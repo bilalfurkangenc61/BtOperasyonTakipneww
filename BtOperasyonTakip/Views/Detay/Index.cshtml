@@ -5,8 +5,8 @@
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
 <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.2/css/dataTables.dateTime.min.css" />
+
 <style>
-    /* Tablo stilleri */
     #musteriTable_wrapper {
         background: white;
         border-radius: 8px;
@@ -29,13 +29,11 @@
             vertical-align: middle;
         }
 
-    /* Responsive için */
     .table-responsive {
         border-radius: 8px;
         overflow: hidden;
     }
 
-    /* DataTables search bar styling */
     .dataTables_filter input {
         border: 1px solid #ddd !important;
         border-radius: 4px !important;
@@ -43,36 +41,21 @@
         margin-left: 10px !important;
     }
 
-    /* Buton grupları */
-    .dt-buttons {
-        margin-bottom: 10px;
-    }
-
-    /* Modal genişliği */
-    #editMusteriModal .modal-dialog {
-        max-width: 90%;
-    }
-
-    /* Arama kutusu stil iyileştirmeleri */
     .dataTables_filter label {
         font-weight: 600;
-        color: #495057;
-        margin-bottom: 5px;
-    }
-
-    .dataTables_filter input:focus {
-        border-color: #0d6efd !important;
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+        padding: 4px;
     }
 </style>
+
 
 <div class="container-fluid mt-4">
     <h2 class="text-primary mb-3">📋 Görüşme Detayları</h2>
 
-    <!-- Filtreleme Kartı -->
+    <!-- FİLTRE -->
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             <div class="row g-3 align-items-end">
+
                 <div class="col-md-3">
                     <label class="form-label">Durum</label>
                     <select id="filterDurum" class="form-select">
@@ -82,6 +65,7 @@
                         <option value="Beklemede">Beklemede</option>
                     </select>
                 </div>
+
                 <div class="col-md-3">
                     <label class="form-label">Teknoloji</label>
                     <select id="filterTeknoloji" class="form-select">
@@ -92,6 +76,7 @@
                         }
                     </select>
                 </div>
+
                 <div class="col-md-3">
                     <label class="form-label">Talep Sahibi</label>
                     <select id="filterTalep" class="form-select">
@@ -102,6 +87,7 @@
                         }
                     </select>
                 </div>
+
                 <div class="col-md-3">
                     <label class="form-label">Tarih Aralığı</label>
                     <div class="input-group">
@@ -109,11 +95,12 @@
                         <input type="text" id="maxDate" class="form-control" placeholder="Bitiş" />
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 
-    <!-- Müşteri Tablosu -->
+    <!-- TABLO -->
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -141,20 +128,19 @@
                                 <td class="fw-bold">@m.Firma</td>
                                 <td>@m.FirmaYetkilisi</td>
                                 <td>@m.Telefon</td>
+
                                 <td>
                                     @if (!string.IsNullOrEmpty(m.SiteUrl))
                                     {
-                                        <a href="@m.SiteUrl" target="_blank" class="text-decoration-none" onclick="event.stopPropagation()">
-                                            🔗 Site
-                                        </a>
+                                        <a href="@m.SiteUrl" target="_blank" onclick="event.stopPropagation()">🔗 Site</a>
                                     }
                                 </td>
-                                <td>
-                                    <span class="badge bg-info">@m.Teknoloji</span>
-                                </td>
+
+                                <td><span class="badge bg-info">@m.Teknoloji</span></td>
+
                                 <td>
                                     @{
-                                        var durumClass = m.Durum switch
+                                        var cls = m.Durum switch
                                         {
                                             "Aktif" => "bg-success",
                                             "Pasif" => "bg-danger",
@@ -162,23 +148,24 @@
                                             _ => "bg-secondary"
                                         };
                                     }
-                                    <span class="badge @durumClass">@m.Durum</span>
+                                    <span class="badge @cls">@m.Durum</span>
                                 </td>
+
                                 <td>@m.TalepSahibi</td>
+
                                 <td>@(m.KayitTarihi?.ToString("dd.MM.yyyy") ?? "-")</td>
-                                <td class="text-truncate" style="max-width: 200px;" title="@m.Aciklama">
+
+                                <td class="text-truncate" style="max-width:200px;" title="@m.Aciklama">
                                     @m.Aciklama
                                 </td>
+
                                 <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button class="btn btn-outline-warning edit-btn" title="Düzenle">
-                                            ✏️
-                                        </button>
-                                        <button class="btn btn-outline-danger delete-btn" title="Sil">
-                                            ❌
-                                        </button>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-warning edit-btn">✏️</button>
+                                        <button class="btn btn-outline-danger delete-btn">❌</button>
                                     </div>
                                 </td>
+
                             </tr>
                         }
                     </tbody>
@@ -191,39 +178,49 @@
     <div id="detayContainer" class="mt-3"></div>
 </div>
 
-<!-- MÜŞTERİ DÜZENLEME MODAL -->
+
+<!-- MODAL -->
 <div class="modal fade" id="editMusteriModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
+
             <div class="modal-header bg-warning text-white">
                 <h5 class="modal-title">✏️ Müşteri Düzenle</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+
             <form id="editMusteriForm">
                 <div class="modal-body">
+
                     <input type="hidden" id="editMusteriId" name="MusteriID" />
 
                     <div class="row g-3">
+
                         <div class="col-md-6">
                             <label class="form-label">Firma Adı *</label>
                             <input type="text" id="editFirma" name="Firma" class="form-control" required />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Firma Yetkilisi</label>
                             <input type="text" id="editFirmaYetkilisi" name="FirmaYetkilisi" class="form-control" />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Telefon</label>
                             <input type="text" id="editTelefon" name="Telefon" class="form-control" />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Site URL</label>
                             <input type="url" id="editSiteUrl" name="SiteUrl" class="form-control" />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Teknoloji</label>
                             <input type="text" id="editTeknoloji" name="Teknoloji" class="form-control" />
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Durum *</label>
                             <select id="editDurum" name="Durum" class="form-select" required>
@@ -233,40 +230,45 @@
                                 <option value="Beklemede">Beklemede</option>
                             </select>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Talep Sahibi</label>
                             <input type="text" id="editTalepSahibi" name="TalepSahibi" class="form-control" />
                         </div>
+
                         <div class="col-12">
                             <label class="form-label">Açıklama</label>
-                            <textarea id="editAciklama" name="Aciklama" class="form-control" rows="4" placeholder="Müşteri hakkında notlar..."></textarea>
+                            <textarea id="editAciklama" name="Aciklama" class="form-control" rows="4"></textarea>
                         </div>
+
                     </div>
+
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="submit" class="btn btn-warning">Güncelle</button>
                 </div>
+
             </form>
+
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-<script src="https://cdn.datatables.net/datetime/1.5.2/js/dataTables.dateTime.min.js"></script>
+
+
+
 
 @section Scripts {
     <script>
+
         $(document).ready(function () {
-            // BASİT DataTables initialization - Sütun sayısı hatasını önlemek için
+
+            // 🔥 CORS ATMAYAN DATATABLES
             const table = $('#musteriTable').DataTable({
-                order: [[8, 'desc']], // Kayıt Tarihi'ne göre sırala (9. sütun, 0'dan başlar)
+                order: [[8, 'desc']],
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/tr.json',
                     search: "Firma Ara:",
                     searchPlaceholder: "Firma adı yazın..."
                 },
@@ -275,243 +277,108 @@
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tümü"]],
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 columnDefs: [
-                    {
-                        targets: [0], // ID sütunu (1. sütun)
-                        visible: false
-                    },
-                    {
-                        targets: [10], // İşlem sütunu (11. sütun)
-                        orderable: false,
-                        searchable: false
-                    },
-                    {
-                        targets: [4], // Site URL sütunu (5. sütun)
-                        orderable: false
-                    }
+                    { targets: [0], visible: false },
+                    { targets: [10], orderable: false, searchable: false },
+                    { targets: [4], orderable: false }
                 ]
             });
 
-            // ÖZEL ARAMA: Sadece firma sütununda ara
-            $.fn.dataTable.ext.search.push(
-                function(settings, data, index, rowData, counter) {
-                    var searchTerm = $('.dataTables_filter input').val().toLowerCase();
+            // Firma arama
+            $.fn.dataTable.ext.search.push(function (settings, data) {
+                var term = $('.dataTables_filter input').val().toLowerCase();
+                if (!term) return true;
+                return data[1].toLowerCase().includes(term);
+            });
 
-                    // Eğer arama terimi yoksa, tüm kayıtları göster
-                    if (!searchTerm) {
-                        return true;
-                    }
+            // Filtreler
+            $('#filterDurum').on('change', function () { table.column(6).search(this.value).draw(); });
+            $('#filterTeknoloji').on('change', function () { table.column(5).search(this.value).draw(); });
+            $('#filterTalep').on('change', function () { table.column(7).search(this.value).draw(); });
 
-                    // Sadece firma sütununda (index 1) ara
-                    var firmaAdi = data[1].toLowerCase();
-                    return firmaAdi.indexOf(searchTerm) > -1;
-                }
-            );
+            // Müşteri seçme
+            $(document).on('click', '#musteriTable tbody tr', function (e) {
 
-            // Tarih filtreleme
-            let minDate, maxDate;
-            if (typeof DateTime !== "undefined") {
-                minDate = new DateTime($('#minDate'), { format: 'DD.MM.YYYY' });
-                maxDate = new DateTime($('#maxDate'), { format: 'DD.MM.YYYY' });
+                if ($(e.target).closest('button').length) return;
 
-                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                    const min = minDate.val();
-                    const max = maxDate.val();
-                    const dateStr = data[8]; // Kayıt Tarihi sütunu (9. sütun)
+                const id = $(this).data('id');
 
-                    if (!dateStr || dateStr === '-') return true;
+                $('#musteriTable tr').removeClass('table-primary');
+                $(this).addClass('table-primary');
 
-                    try {
-                        const date = moment(dateStr, 'DD.MM.YYYY', true);
-                        if (!date.isValid()) return true;
+                $('#selectedInfo').show().html(`<strong>Seçilen Müşteri:</strong> ${$(this).find('td:nth-child(2)').text()}`);
 
-                        if ((min && date.isBefore(moment(min, 'DD.MM.YYYY'))) ||
-                            (max && date.isAfter(moment(max, 'DD.MM.YYYY')))) {
-                            return false;
-                        }
-                        return true;
-                    } catch (e) {
-                        return true;
-                    }
-                });
+                   fetch(`/Detay/GetDetaylar?musteriId=${id}`)
+        .then(r => r.text())
+        .then(html => {
+            $("#detayContainer").hide().html(html);
 
-                $('#minDate, #maxDate').on('change', function () {
-                    table.draw();
-                });
-            }
+            // AJAX ile gelen scriptleri çalıştır
+            var scripts = $(html).filter("script");
+            scripts.each(function () {
+                eval($(this).text());
+            });
 
-            // Filtreleme fonksiyonları
-            function initFilters() {
-                $('#filterDurum').on('change', function () {
-                    table.column(6).search(this.value).draw(); // Durum sütunu (7. sütun)
-                });
+            $("#detayContainer").slideDown(250);
+        });
 
-                $('#filterTeknoloji').on('change', function () {
-                    table.column(5).search(this.value).draw(); // Teknoloji sütunu (6. sütun)
-                });
+            });
 
-                $('#filterTalep').on('change', function () {
-                    table.column(7).search(this.value).draw(); // Talep Sahibi sütunu (8. sütun)
-                });
+            // Düzenleme modal
+            $(document).on('click', '.edit-btn', function (e) {
+                e.stopPropagation();
+                const id = $(this).closest('tr').data('id');
 
-                // Arama kutusuna özel placeholder
-                $('.dataTables_filter input').attr('placeholder', 'Firma adı yazın...');
-
-                // Arama kutusu stilini iyileştir
-                $('.dataTables_filter input').css({
-                    'width': '250px',
-                    'padding': '8px 12px',
-                    'border': '2px solid #dee2e6',
-                    'border-radius': '6px',
-                    'font-size': '14px'
-                });
-            }
-
-            initFilters();
-
-            // MÜŞTERİ DÜZENLEME MODAL
-            function openEditModal(musteriId) {
-                fetch(`/Detay/GetMusteri?id=${musteriId}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Müşteri bulunamadı');
-                        }
-                        return response.json();
-                    })
-                    .then(musteri => {
-                        $('#editMusteriId').val(musteri.musteriID);
-                        $('#editFirma').val(musteri.firma);
-                        $('#editFirmaYetkilisi').val(musteri.firmaYetkilisi);
-                        $('#editTelefon').val(musteri.telefon);
-                        $('#editSiteUrl').val(musteri.siteUrl);
-                        $('#editTeknoloji').val(musteri.teknoloji);
-                        $('#editDurum').val(musteri.durum);
-                        $('#editTalepSahibi').val(musteri.talepSahibi);
-                        $('#editAciklama').val(musteri.aciklama);
+                fetch(`/Detay/GetMusteri?id=${id}`)
+                    .then(r => r.json())
+                    .then(m => {
+                        $('#editMusteriId').val(m.musteriID);
+                        $('#editFirma').val(m.firma);
+                        $('#editFirmaYetkilisi').val(m.firmaYetkilisi);
+                        $('#editTelefon').val(m.telefon);
+                        $('#editSiteUrl').val(m.siteUrl);
+                        $('#editTeknoloji').val(m.teknoloji);
+                        $('#editDurum').val(m.durum);
+                        $('#editTalepSahibi').val(m.talepSahibi);
+                        $('#editAciklama').val(m.aciklama);
 
                         $('#editMusteriModal').modal('show');
-                    })
-                    .catch(error => {
-                        console.error('Müşteri bilgileri alınırken hata:', error);
-                        alert('Müşteri bilgileri yüklenemedi!');
                     });
-            }
+            });
 
-            // MÜŞTERİ DÜZENLEME FORM SUBMIT
-            $('#editMusteriForm').on('submit', function(e) {
+            // Düzenleme submit
+            $('#editMusteriForm').submit(function (e) {
                 e.preventDefault();
-
                 const formData = new FormData(this);
 
                 fetch('/Detay/UpdateMusteri', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        $('#editMusteriModal').modal('hide');
-                        location.reload();
-                    } else {
-                        alert('Hata: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Güncelleme hatası:', error);
-                    alert('Güncelleme sırasında bir hata oluştu!');
+                .then(r => r.json())
+                .then(d => {
+                    alert(d.message);
+                    if (d.success) location.reload();
                 });
             });
 
-            let aktifMusteriId = null;
-
-            // MÜŞTERİ SEÇİMİ - EVENT DELEGATION
-            $(document).on('click', '#musteriTable tbody tr', function (e) {
-                // Butonlara tıklanırsa işlem yapma
-                if ($(e.target).is('button') || $(e.target).closest('button').length) {
-                    return;
-                }
-
-                const musteriId = $(this).data('id');
-                if (!musteriId) return;
-
-                if (aktifMusteriId === musteriId) {
-                    $('#detayContainer').slideUp(200, function () {
-                        $(this).empty();
-                    });
-                    $('#musteriTable tr').removeClass('table-primary');
-                    $('#selectedInfo').hide();
-                    aktifMusteriId = null;
-                    return;
-                }
-
-                aktifMusteriId = musteriId;
-                $('#musteriTable tr').removeClass('table-primary');
-                $(this).addClass('table-primary');
-
-                const firmaAdi = $(this).find('td:nth-child(2)').text();
-                $('#selectedInfo').show().html(`<strong>Seçilen Müşteri:</strong> ${firmaAdi}`);
-
-                fetch(`/Detay/GetDetaylar?musteriId=${musteriId}`)
-                    .then(res => {
-                        if (!res.ok) {
-                            throw new Error('Detaylar yüklenemedi');
-                        }
-                        return res.text();
-                    })
-                    .then(html => {
-                        $('#detayContainer').hide().html(html).slideDown(250);
-                    })
-                    .catch(error => {
-                        console.error('Detay yükleme hatası:', error);
-                        alert("Detaylar yüklenemedi.");
-                    });
-            });
-
-            // MÜŞTERİ DÜZENLEME BUTONU - EVENT DELEGATION
-            $(document).on('click', '.edit-btn', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const musteriId = $(this).closest('tr').data('id');
-                if (musteriId) {
-                    openEditModal(musteriId);
-                }
-            });
-
-            // MÜŞTERİ SİLME BUTONU - EVENT DELEGATION
+            // Silme
             $(document).on('click', '.delete-btn', function (e) {
-                e.preventDefault();
                 e.stopPropagation();
+                const tr = $(this).closest('tr');
+                const id = tr.data('id');
 
-                const musteriId = $(this).closest('tr').data('id');
-                const firmaAdi = $(this).closest('tr').find('td:nth-child(2)').text();
-
-                if (confirm(`"${firmaAdi}" müşterisini ve tüm detaylarını silmek istediğinizden emin misiniz?`)) {
-                    fetch(`/Detay/DeleteMusteri/${musteriId}`, { method: 'DELETE' })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert(data.message);
-                                // Tablodan satırı kaldır
-                                table.row($(this).closest('tr')).remove().draw();
-                                $('#detayContainer').empty();
-                                $('#selectedInfo').hide();
-                                aktifMusteriId = null;
-                            } else {
-                                alert('Hata: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Silme hatası:', error);
-                            alert('Silme sırasında bir hata oluştu!');
+                if (confirm("Silinsin mi?")) {
+                    fetch(`/Detay/DeleteMusteri/${id}`, { method: 'DELETE' })
+                        .then(r => r.json())
+                        .then(d => {
+                            alert(d.message);
+                            if (d.success) table.row(tr).remove().draw();
                         });
                 }
             });
 
-            // Sayfa yüklendiğinde arama kutusuna odaklan
-            setTimeout(() => {
-                $('.dataTables_filter input').focus();
-            }, 100);
         });
+
     </script>
 }
+

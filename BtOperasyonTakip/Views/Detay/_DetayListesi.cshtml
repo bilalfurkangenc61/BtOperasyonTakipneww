@@ -76,6 +76,56 @@
                     </tbody>
                 </table>
             </div>
+            <script>
+                $(document).on('submit', '#yeniDetayForm', function (e) {
+                    e.preventDefault();
+
+                    const form = $(this);
+                    const formData = form.serialize();
+
+                    $.post('/Detay/AddDetay', formData, function (html) {
+
+                        // Partial view güncelleniyor
+                        $("#detayContainer").hide().html(html).slideDown(200);
+
+                        // Form reset
+                        form.trigger("reset");
+
+                        // Son yüklenen scriptleri çalıştır (partial içinde varsa)
+                        $(html).filter("script").each(function () {
+                            eval($(this).text());
+                        });
+                    });
+                });
+
+
+                // 🟡 DETAY SİLME
+                $(document).on('click', '.delete-detay-btn', function () {
+                    const id = $(this).data('id');
+
+                    if (!confirm("Bu detay silinsin mi?")) return;
+
+                    $.ajax({
+                        url: `/Detay/DeleteDetay/${id}`,
+                        type: 'DELETE',
+                        success: function () {
+
+                            const musteriId = $(".detay-container").data("musteri-id");
+
+                            // Silmeden sonra güncel listeyi tekrar yükle
+                            $("#detayContainer").load(`/Detay/GetDetaylar?musteriId=${musteriId}`);
+                        }
+                    });
+                });
+
+
+                // 🟡 DETAY DÜZENLEME (modal yoksa inline edit yapabilirsin)
+                $(document).on('click', '.edit-detay-btn', function () {
+                    const id = $(this).data('id');
+                    alert("Detay düzenleme geldiğinde bu buton aktif olacak: " + id);
+                });
+            </script>
+
         </div>
     </div>
 </div>
