@@ -171,6 +171,25 @@ namespace BtOperasyonTakip.Controllers
             return PartialView("_DetayListesi", detaylar);
         }
 
+        [HttpGet]
+        public IActionResult GetDetay(int id)
+        {
+            var detay = _context.Detaylar.FirstOrDefault(d => d.DetayID == id);
+            if (detay == null)
+                return NotFound();
+
+            return Json(new
+            {
+                detayID = detay.DetayID,
+                musteriID = detay.MusteriID,
+                tarih = detay.Tarih.ToString("yyyy-MM-dd"),
+                gorusulen = detay.Gorusulen,
+                aciklama = detay.Aciklama,
+                kekleyen = detay.Kekleyen
+            });
+        }
+
+
         [HttpDelete]
         public IActionResult DeleteDetay(int id)
         {
