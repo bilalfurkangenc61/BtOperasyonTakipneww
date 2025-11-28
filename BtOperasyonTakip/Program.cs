@@ -4,27 +4,37 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔹 Veritabanı bağlantısı (SQL Server veya MySQL fark etmez)
+// 🔹 DATABASE
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 🔹 MVC
 builder.Services.AddControllersWithViews();
 
+// 🔹 SESSION EKLENİYOR!
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(12);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 // 🔹 Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Auth/Login";         // Giriş yapılmadığında yönlenecek sayfa
-        options.LogoutPath = "/Auth/Logout";       // Çıkış yolu
-        options.AccessDeniedPath = "/Auth/Login";  // Yetkisiz erişim yönlendirmesi
-        options.ExpireTimeSpan = TimeSpan.FromDays(7); // Remember Me aktifse 7 gün açık kalır
-        options.SlidingExpiration = true;          // Her işlemde süre yenilenir
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Auth/Login";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
     });
 
 var app = builder.Build();
 
-// 🔹 Hata yönetimi
+// 🔹 HATA YÖNETİMİ
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -40,16 +50,16 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 🔹 Authentication ve Authorization sırası önemli!
+// 🔹 SESSION MIDDLEWARE MUTLAKA BURAYA!
+app.UseSession();
+
+// 🔹 AUTH MIDDLEWARE
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 🔹 Varsayılan yönlendirme (Login → Dashboard)
+// 🔹 Route / Default Page
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=Login}/{id?}");
-
-
-
 
 app.Run();

@@ -18,9 +18,15 @@ namespace BtOperasyonTakip.Models
         public int JiraAktif { get; set; }
         public int JiraTamamlandi { get; set; }
 
+        // YENİ: Ticket İstatistikleri
+        public int TicketOnaybekleniyor { get; set; }
+        public int TicketOnaylandi { get; set; }
+        public int TicketReddedildi { get; set; }
+        public int ToplamTicket { get; set; }
 
         public List<Musteri> Musteriler { get; set; } = new();
         public List<JiraTask> JiraTasks { get; set; } = new();
+        public List<Ticket> Tickets { get; set; } = new(); // YENİ
 
         public List<ToplantiNotu> ToplantiNotlari { get; set; } = new();
     }

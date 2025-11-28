@@ -16,5 +16,7 @@ namespace BtOperasyonTakip.Data
         public DbSet<JiraTask> JiraTasks => Set<JiraTask>();
         public DbSet<JiraYorum> JiraYorumlar { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
+        public DbSet<Hata> Hatalar { get; set; } // YENİ
     }
 }

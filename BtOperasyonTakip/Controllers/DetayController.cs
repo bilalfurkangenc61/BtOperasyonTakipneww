@@ -1,10 +1,12 @@
 ﻿using BtOperasyonTakip.Data;
 using BtOperasyonTakip.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BtOperasyonTakip.Controllers
 {
+    [Authorize(Roles = "Operasyon")]
     public class DetayController : Controller
     {
         private readonly AppDbContext _context;

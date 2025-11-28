@@ -19,7 +19,6 @@ namespace BtOperasyonTakip.Controllers
             _context = context;
         }
 
- 
         private static string HashPassword(string password)
         {
             using var sha256 = SHA256.Create();
@@ -27,19 +26,23 @@ namespace BtOperasyonTakip.Controllers
             return Convert.ToBase64String(bytes);
         }
 
- 
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login()
         {
-       
             if (User.Identity?.IsAuthenticated == true)
+            {
+                if (User.IsInRole("Operasyon"))
+                    return RedirectToAction("Index", "Dashboard");
+                if (User.IsInRole("Saha"))
+                    return RedirectToAction("Index", "Ticket");
+
                 return RedirectToAction("Index", "Dashboard");
+            }
 
             return View();
         }
 
-    
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Login(string username, string password, bool rememberMe)
@@ -53,12 +56,12 @@ namespace BtOperasyonTakip.Controllers
                 return View();
             }
 
-           
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName ?? user.UserName),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
-                new Claim("UserId", user.Id.ToString())
+                new Claim("UserId", user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role ?? "Saha")
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -71,49 +74,80 @@ namespace BtOperasyonTakip.Controllers
                     ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
                 });
 
-            return RedirectToAction("Index", "Dashboard");
+            if (user.Role == "Operasyon")
+                return RedirectToAction("Index", "Dashboard");
+            else
+                return RedirectToAction("Index", "Ticket");
         }
 
-    
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Register() => View();
 
-     
         [HttpPost]
         [AllowAnonymous]
-        public IActionResult Register(string fullName, string username, string email, string password)
+        public async Task<IActionResult> Register(string fullName, string username, string email, string password, string role)
         {
             if (_context.Users.Any(u => u.UserName == username))
             {
+
                 ViewBag.Error = "Bu kullanıcı adı zaten mevcut.";
                 return View();
             }
 
-            var user = new User
+            else if(_context.Users.Any(u => u.Email == email))
             {
-                FullName = fullName,
-                UserName = username,
-                Email = email,
-                PasswordHash = HashPassword(password),
-                CreatedAt = DateTime.Now
-            };
+                ViewBag.Error = "Bu e-mail adı zaten mevcut.";
+                return View();
+            }
+            
+            var user = new User
+                {
+                    FullName = fullName,
+                    UserName = username,
+                    Email = email,
+                    PasswordHash = HashPassword(password),
+                    CreatedAt = DateTime.Now,
+                    Role = string.IsNullOrWhiteSpace(role) ? "Saha" : role
+                };
 
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            ViewBag.Success = "Kayıt başarılı! Giriş yapabilirsiniz.";
-            return RedirectToAction("Login");
+            await SignInUser(user);
+
+            if (user.Role == "Operasyon")
+                return RedirectToAction("Index", "Home");
+            else
+                return RedirectToAction("Index", "Ticket");
         }
 
-    
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-    
             return RedirectToAction("Login");
+        }
+
+        private async Task SignInUser(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.FullName ?? user.UserName),
+                new Claim(ClaimTypes.Email, user.Email ?? ""),
+                new Claim("UserId", user.Id.ToString()),
+                new Claim(ClaimTypes.Role, user.Role ?? "Saha")
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+                });
         }
     }
 }

@@ -21,5 +21,9 @@ namespace BtOperasyonTakip.Models
 
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Yeni: Rol alanı. Default "Saha"
+        [Required, StringLength(20)]
+        public string Role { get; set; } = "Saha";
     }
 }

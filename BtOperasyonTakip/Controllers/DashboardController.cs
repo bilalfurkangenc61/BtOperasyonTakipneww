@@ -21,33 +21,31 @@ namespace BtOperasyonTakip.Controllers
 
         public IActionResult Index()
         {
-           
             var musteriler = _context.Musteriler?.ToList() ?? new List<Musteri>();
 
-       
             var jiraTasks = _context.JiraTasks?.ToList() ?? new List<JiraTask>();
-            var jiraToplam = jiraTasks.Count;
             var jiraBeklemede = jiraTasks.Count(t => !string.IsNullOrWhiteSpace(t.Durum) && t.Durum.Trim().ToLower() == "beklemede");
             var jiraAktif = jiraTasks.Count(t => !string.IsNullOrWhiteSpace(t.Durum) && t.Durum.Trim().ToLower() == "aktif");
             var jiraTamam = jiraTasks.Count(t => !string.IsNullOrWhiteSpace(t.Durum) && t.Durum.Trim().ToLower() == "tamamlandı");
 
-         
             var toplantiNotlari = _context.ToplantiNotlari?.ToList() ?? new List<ToplantiNotu>();
 
-         
+            // YENİ: Ticket İstatistikleri
+            var tickets = _context.Tickets?.ToList() ?? new List<Ticket>();
+            var ticketOnaybekleniyor = tickets.Count(t => t.Durum == "Onay Bekleniyor");
+            var ticketOnaylandi = tickets.Count(t => t.Durum == "Onaylandi");
+            var ticketReddedildi = tickets.Count(t => t.Durum == "Reddedildi");
+
             var aktifMusteri = musteriler.Count(m => !string.IsNullOrWhiteSpace(m.Durum) && m.Durum.Trim().ToLower() == "aktif");
             var pasifMusteri = musteriler.Count(m => !string.IsNullOrWhiteSpace(m.Durum) && m.Durum.Trim().ToLower() == "pasif");
 
- 
             var bekleyenIs = jiraTasks.Count(t => !string.IsNullOrWhiteSpace(t.Durum) && t.Durum.Trim().ToLower() == "beklemede");
 
-        
             var buAyEklenen = musteriler.Count(m =>
                 m.KayitTarihi.HasValue &&
                 m.KayitTarihi.Value.Month == DateTime.Now.Month &&
                 m.KayitTarihi.Value.Year == DateTime.Now.Year);
 
-       
             var aylar = Enumerable.Range(0, 6)
                 .Select(i => DateTime.Now.AddMonths(-i))
                 .OrderBy(x => x)
@@ -67,7 +65,6 @@ namespace BtOperasyonTakip.Controllers
                 ayEtiketleri.Add(ay.ToString("MMMM", new CultureInfo("tr-TR")));
             }
 
-         
             var model = new DashboardViewModel
             {
                 ToplamMusteri = musteriler.Count,
@@ -82,6 +79,12 @@ namespace BtOperasyonTakip.Controllers
                 JiraAktif = jiraAktif,
                 JiraTamamlandi = jiraTamam,
 
+                // YENİ: Ticket İstatistikleri
+                TicketOnaybekleniyor = ticketOnaybekleniyor,
+                TicketOnaylandi = ticketOnaylandi,
+                TicketReddedildi = ticketReddedildi,
+                ToplamTicket = tickets.Count,
+
                 Musteriler = musteriler
                     .OrderByDescending(m => m.KayitTarihi ?? DateTime.MinValue)
                     .Take(10)
@@ -92,13 +95,16 @@ namespace BtOperasyonTakip.Controllers
                     .Take(10)
                     .ToList(),
 
+                Tickets = tickets
+                    .OrderByDescending(t => t.OlusturmaTarihi)
+                    .ToList(),
+
                 ToplantiNotlari = toplantiNotlari
                     .OrderByDescending(n => n.Tarih)
                     .Take(10)
                     .ToList()
             };
 
-      
             return View(model);
         }
     }
